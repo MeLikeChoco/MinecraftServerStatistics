@@ -3,6 +3,7 @@
 //using System.Linq;
 //using System.Text;
 //using System.Threading.Tasks;
+//using AngleSharp;
 //using AngleSharp.Dom;
 
 //namespace MinecraftServerStatistics.Models.ServerLists
@@ -27,10 +28,14 @@
 //            throw new NotImplementedException();
 //        }
 
-//        protected override Task<List<string>> GetServerLinks(List<string> links, int page, int remaining)
+//        protected override async Task<List<string>> GetServerLinks(List<string> links, int page, int remaining)
 //        {
 
-//            throw new NotImplementedException();
+//            var link = $"{Site}index/{page}";
+//            var dom = await Context.OpenAsync(link);
+            
+
+//            return links;
 
 //        }
 
@@ -43,5 +48,6 @@
 //        {
 //            throw new NotImplementedException();
 //        }
+
 //    }
 //}

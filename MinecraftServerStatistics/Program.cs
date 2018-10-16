@@ -18,30 +18,46 @@ namespace MinecraftServerStatistics
         public static void Main(string[] args)
         {
 
-            Console.WriteLine("Welcome to Minecraft Server Statistic Scraper");
-            Console.WriteLine("Getting modules...");
+            try
+            {
 
-            var scrapers = Assembly.GetExecutingAssembly().GetTypes()
-                .Where(type => type.IsClass && type.Namespace == "MinecraftServerStatistics.Models.ServerLists" && type.GetCustomAttribute<CompilerGeneratedAttribute>() == null)
-                .Select(Activator.CreateInstance)
-                .Cast<Scraper>();
+                Console.WriteLine("Welcome to Minecraft Server Statistic Scraper");
+                Console.WriteLine("Getting modules...");
 
-            Console.WriteLine("Scraping...");
+                var scrapers = Assembly.GetExecutingAssembly().GetTypes()
+                    .Where(type => type.IsClass && type.Namespace == "MinecraftServerStatistics.Models.ServerLists" && type.GetCustomAttribute<CompilerGeneratedAttribute>() == null)
+                    .Select(Activator.CreateInstance)
+                    .Cast<Scraper>();
 
-            var tasks = scrapers.Select(scraper => scraper.Scrape()).ToArray();
+                Console.WriteLine("Scraping...");
 
-            Task.WaitAll(tasks);
+                var tasks = scrapers.Select(scraper => scraper.Scrape()).ToArray();
 
-            var dataList = tasks.Select(task => task.Result);
+                Task.WaitAll(tasks);
 
-            Console.WriteLine("Scraping finished.");
+                var dataList = tasks.Select(task => task.Result);
 
-            var json = JsonConvert.SerializeObject(dataList, Formatting.Indented);
+                Console.WriteLine("Scraping finished.");
 
-            Console.WriteLine("Writing to file...");
+                var json = JsonConvert.SerializeObject(dataList, Formatting.Indented);
 
-            File.WriteAllText("stats.json", json);
-            Process.Start("notepad.exe", Path.Combine(Directory.GetCurrentDirectory(), "stats.json"));
+                Console.WriteLine("Writing to file...");
+
+                File.WriteAllText("stats.json", json);
+                Console.Write("Finished. Press any key to view result...");
+                Console.ReadKey();
+
+                Process.Start("notepad.exe", Path.Combine(Directory.GetCurrentDirectory(), "stats.json"));
+
+            }
+            catch (Exception e)
+            {
+
+                Console.WriteLine(e.Message);
+                Console.WriteLine(e.StackTrace);
+                Console.ReadKey();
+
+            }
 
         }
 

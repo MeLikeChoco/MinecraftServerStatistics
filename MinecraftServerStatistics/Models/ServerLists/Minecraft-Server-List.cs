@@ -54,8 +54,8 @@ namespace MinecraftServerStatistics.Models.ServerLists
         protected override async Task<List<string>> GetServerLinks(List<string> links, int page, int remaining)
         {
 
-            var listLink = $"{Site}page/{page}";
-            var dom = await Context.OpenAsync(listLink);
+            var link = $"{Site}page/{page}";
+            var dom = await Context.OpenAsync(link);
             var table = dom.GetElementsByClassName("serverdatadiv1")
                 .First()
                 .GetElementsByTagName("tbody")
