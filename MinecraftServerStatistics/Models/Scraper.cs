@@ -29,6 +29,8 @@ namespace MinecraftServerStatistics.Models
         public async Task<Data> Scrape()
         {
 
+            Console.WriteLine($"Beginning to scrape {Site}");
+
             var serverLinks = new List<string>(50);
             int remaining, page = 0;
 
@@ -54,12 +56,14 @@ namespace MinecraftServerStatistics.Models
                 server.WebsiteLink = GetWebsite(serverPageDom);
                 server.ServerIP = GetServerIP(serverPageDom);
                 server.Version = GetVersion(serverPageDom);
-                server.Plugins = GetPlugins(serverPageDom, new List<string>());
+                server.Features = GetFeatures(serverPageDom, new List<string>());
 
                 data.AddServer(counter++, server);
 
             }
 
+            Console.WriteLine($"Finished scraping {Site}");
+                        
             return data;
 
         }
@@ -70,7 +74,7 @@ namespace MinecraftServerStatistics.Models
         protected abstract string GetWebsite(IDocument dom);
         protected abstract string GetServerIP(IDocument dom);
         protected abstract string GetVersion(IDocument dom);
-        protected abstract IEnumerable<string> GetPlugins(IDocument dom, List<string> plugins);
+        protected abstract IEnumerable<string> GetFeatures(IDocument dom, List<string> features);
 
     }
 }

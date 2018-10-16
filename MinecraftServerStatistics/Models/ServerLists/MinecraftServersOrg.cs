@@ -1,53 +1,98 @@
-﻿//using System;
-//using System.Collections.Generic;
-//using System.Linq;
-//using System.Text;
-//using System.Threading.Tasks;
-//using AngleSharp;
-//using AngleSharp.Dom;
+﻿using AngleSharp;
+using AngleSharp.Dom;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-//namespace MinecraftServerStatistics.Models.ServerLists
-//{
-//    public class MinecraftServersOrg : Scraper
-//    {
+namespace MinecraftServerStatistics.Models.ServerLists
+{
+    public class MinecraftServersOrg : Scraper
+    {
 
-//        public MinecraftServersOrg() : base("https://minecraftservers.org/") { }
+        public MinecraftServersOrg() : base("https://minecraftservers.org/",
+            "First 5 servers are featured/sponsored servers, so they are most likely not top servers. " +
+            "Unlike minecraft-server-list, where it was not clear if the featured servers are actually the top servers, minecraftservers.org is clear on which servers are featured") { }
 
-//        protected override string GetName(IDocument dom)
-//        {
-//            throw new NotImplementedException();
-//        }
+        protected override string GetName(IDocument dom)
+            => dom.GetElementsByClassName("section-head").First().TextContent.Trim();
 
-//        protected override IEnumerable<string> GetPlugins(IDocument dom, List<string> plugins)
-//        {
-//            throw new NotImplementedException();
-//        }
+        protected override IEnumerable<string> GetFeatures(IDocument dom, List<string> features)
+        {
 
-//        protected override string GetServerIP(IDocument dom)
-//        {
-//            throw new NotImplementedException();
-//        }
+            var table = GetTable(dom);
+            var tags = table.GetElementsByClassName("tags")
+                .First()
+                .Children
+                .Select(element => element.TextContent.Trim());
 
-//        protected override async Task<List<string>> GetServerLinks(List<string> links, int page, int remaining)
-//        {
+            features.AddRange(tags);
 
-//            var link = $"{Site}index/{page}";
-//            var dom = await Context.OpenAsync(link);
+            return features;
+
+        }
+
+        protected override string GetServerIP(IDocument dom)
+        {
+
+            var table = GetTable(dom);
+            var ipSection = table.Children
+                .First(element => element.GetElementsByClassName("header").First().TextContent.Contains("IP"));
+
+            return ipSection.Children.ElementAt(1).TextContent.Trim();
+
+        }
+
+        protected override async Task<List<string>> GetServerLinks(List<string> links, int page, int remaining)
+        {
+
+            var link = $"{Site}index/{page}";
+            var dom = await Context.OpenAsync(link);
+            var container = dom.GetElementById("main").GetElementsByClassName("sponsored-servers container cf").First();
+            var servers = container.GetElementsByTagName("table")
+                .SelectMany(element => element.GetElementsByTagName("tbody"))
+                .SelectMany(element => element.GetElementsByTagName("tr"))
+                .Take(remaining)
+                .Select(element => $"{Site}server/{element.GetAttribute("data-id")}")
+                .Distinct();
+
+            links.AddRange(servers);
+
+            return links;
+
+        }
+
+        protected override string GetVersion(IDocument dom)
+            => GetTable(dom).GetElementsByClassName("version").First().TextContent.Trim();
+
+        protected override string GetWebsite(IDocument dom)
+        {
+
+            var table = GetTable(dom);
+            var websiteSection = table.Children
+                .FirstOrDefault(element => element.GetElementsByClassName("header").First().TextContent.Contains("Website"));
+
+            if (websiteSection == null)
+                return null;
+
+            return websiteSection.GetElementsByTagName("a").First().GetAttribute("href");
+
+            //works too but more convoluted
+            //return GetTable(dom).Children
+            //    .FirstOrDefault(element => element.GetElementsByClassName("header").First().TextContent.Contains("Website"))?
+            //    .GetElementsByTagName("a").First()
+            //    .GetAttribute("href");
             
+        }
 
-//            return links;
+        /// <summary>
+        /// Returns tbody of table
+        /// </summary>
+        /// <param name="dom"></param>
+        /// <returns></returns>
+        private IElement GetTable(IDocument dom)
+            => dom.GetElementsByClassName("server-info").FirstOrDefault()?.FirstElementChild;
 
-//        }
-
-//        protected override string GetVersion(IDocument dom)
-//        {
-//            throw new NotImplementedException();
-//        }
-
-//        protected override string GetWebsite(IDocument dom)
-//        {
-//            throw new NotImplementedException();
-//        }
-
-//    }
-//}
+    }
+}

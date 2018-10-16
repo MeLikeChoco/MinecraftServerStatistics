@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AngleSharp;
 using AngleSharp.Dom;
+using MinecraftServerStatistics.Models.Attributes;
 
 namespace MinecraftServerStatistics.Models.ServerLists
 {
@@ -20,23 +21,23 @@ namespace MinecraftServerStatistics.Models.ServerLists
 
             var table = GetDataTable(dom);
 
-            if (!string.IsNullOrEmpty(table.FirstElementChild.TextContent))
-                return table.FirstElementChild.TextContent.Trim();
+            if (!string.IsNullOrEmpty(table.FirstChild.TextContent))
+                return table.FirstChild.TextContent.Trim();
             else
                 return table.Children[1].TextContent.Trim();
 
         }
 
-        protected override IEnumerable<string> GetPlugins(IDocument dom, List<string> plugins)
+        protected override IEnumerable<string> GetFeatures(IDocument dom, List<string> features)
         {
             
             var table = GetDataTable(dom);
-            var pluginSection = table.LastElementChild;
+            var featureSection = table.LastElementChild;
             
-            foreach(var element in pluginSection.FirstElementChild.Children)
-                plugins.Add(element.TextContent.Trim());
+            foreach(var element in featureSection.FirstElementChild.Children)
+                features.Add(element.TextContent.Trim());
 
-            return plugins;
+            return features;
 
         }
 
@@ -45,7 +46,7 @@ namespace MinecraftServerStatistics.Models.ServerLists
 
             var table = GetDataTable(dom);
             var ipSection = table.Children
-                .First(element => element.TextContent.Contains("Server IP:"));
+                .First(element => element.FirstChild.TextContent.Contains("Server IP:"));
 
             return ipSection.Children[1].TextContent.Trim();
 
@@ -86,7 +87,7 @@ namespace MinecraftServerStatistics.Models.ServerLists
 
             var table = GetDataTable(dom);
             var versionElement = table.Children
-                .First(element => element.TextContent.Contains("Server Version:"));
+                .First(element => element.FirstChild.TextContent.Contains("Server Version:"));
             return versionElement.Children
                 .ElementAt(1)
                 .TextContent.Trim().Replace("[", "").Replace("]", "");
@@ -98,12 +99,12 @@ namespace MinecraftServerStatistics.Models.ServerLists
 
             var table = GetDataTable(dom);
             var websiteElement = table.Children
-                .FirstOrDefault(element => element.TextContent.Contains("Website:"));
+                .FirstOrDefault(element => element.FirstChild.TextContent.Contains("Website:"));
 
             if (websiteElement == null)
                 return null;
 
-            return websiteElement.GetElementsByTagName("a").First().TextContent;
+            return websiteElement.GetElementsByTagName("a").First().GetAttribute("href");
 
         }
 

@@ -15,7 +15,7 @@ namespace MinecraftServerStatistics.Models
         public string WebsiteLink { get; set; }
         public string ServerIP { get; set; }
         public string Version { get; set; }
-        public IEnumerable<string> Plugins { get; set; }
+        public IEnumerable<string> Features { get; set; }
 
     }
 }

@@ -1,4 +1,5 @@
 ﻿using MinecraftServerStatistics.Models;
+using MinecraftServerStatistics.Models.Attributes;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -25,13 +26,15 @@ namespace MinecraftServerStatistics
                 Console.WriteLine("Getting modules...");
 
                 var scrapers = Assembly.GetExecutingAssembly().GetTypes()
-                    .Where(type => type.IsClass && type.Namespace == "MinecraftServerStatistics.Models.ServerLists" && type.GetCustomAttribute<CompilerGeneratedAttribute>() == null)
+                    .Where(type => type.IsClass && type.Namespace == "MinecraftServerStatistics.Models.ServerLists" 
+                    && type.GetCustomAttribute<CompilerGeneratedAttribute>() == null 
+                    && type.GetCustomAttribute<IgnoreAttribute>() == null)
                     .Select(Activator.CreateInstance)
                     .Cast<Scraper>();
 
                 Console.WriteLine("Scraping...");
 
-                var tasks = scrapers.Select(scraper => scraper.Scrape()).ToArray();
+                var tasks = scrapers.AsParallel().Select(scraper => scraper.Scrape()).ToArray();
 
                 Task.WaitAll(tasks);
 
@@ -50,11 +53,11 @@ namespace MinecraftServerStatistics
                 Process.Start("notepad.exe", Path.Combine(Directory.GetCurrentDirectory(), "stats.json"));
 
             }
-            catch (Exception e)
+            catch (AggregateException e)
             {
-
-                Console.WriteLine(e.Message);
-                Console.WriteLine(e.StackTrace);
+                                
+                Console.WriteLine(e.InnerException.Message);
+                Console.WriteLine(e.InnerException.StackTrace);
                 Console.ReadKey();
 
             }
