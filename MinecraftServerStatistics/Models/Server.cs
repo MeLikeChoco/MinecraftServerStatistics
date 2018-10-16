@@ -10,11 +10,12 @@ namespace MinecraftServerStatistics.Models
     {
 
         public string Name { get; set; }
+        //public bool IsFeatured { get; set; }
         public string ServerListLink { get; set; }
         public string WebsiteLink { get; set; }
         public string ServerIP { get; set; }
         public string Version { get; set; }
-        public List<string> Plugins { get; set; }
+        public IEnumerable<string> Plugins { get; set; }
 
     }
 }

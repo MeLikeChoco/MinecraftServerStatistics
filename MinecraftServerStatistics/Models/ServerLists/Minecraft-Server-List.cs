@@ -12,10 +12,8 @@ namespace MinecraftServerStatistics.Models.ServerLists
     public class Minecraft_Server_List : Scraper
     {
 
-        public override string Site { get; protected set; }
-
-        public Minecraft_Server_List()
-            => Site = "https://minecraft-server-list.com/";
+        public Minecraft_Server_List() : base("https://minecraft-server-list.com/",
+            "First 10 servers are featured servers, so they may not actually be top servers.") { }
 
         protected override string GetName(IDocument dom)
         {
@@ -29,10 +27,9 @@ namespace MinecraftServerStatistics.Models.ServerLists
 
         }
 
-        protected override List<string> GetPlugins(IDocument dom)
+        protected override IEnumerable<string> GetPlugins(IDocument dom, List<string> plugins)
         {
-
-            var plugins = new List<string>();
+            
             var table = GetDataTable(dom);
             var pluginSection = table.LastElementChild;
             
@@ -54,46 +51,33 @@ namespace MinecraftServerStatistics.Models.ServerLists
 
         }
 
-        protected override async Task<IEnumerable<string>> GetServerLinks()
+        protected override async Task<List<string>> GetServerLinks(List<string> links, int page, int remaining)
         {
 
-            var pageToAmount = await File.ReadAllLinesAsync("Minecraft-Server-ListPages.txt");
-            var serverPages = new List<string>();
+            var listLink = $"{Site}page/{page}";
+            var dom = await Context.OpenAsync(listLink);
+            var table = dom.GetElementsByClassName("serverdatadiv1")
+                .First()
+                .GetElementsByTagName("tbody")
+                .First()
+                .Children
+                .Take(remaining);
 
-            foreach(var line in pageToAmount)
+            foreach (var element in table)
             {
 
-                var array = line.Split(':');
-                var subPage = array.First();
-                var amount = array.ElementAtOrDefault(1);
-                var listLink = $"{Site}{subPage}";
-                var dom = await Context.OpenAsync(listLink);
-                IEnumerable<IElement> table = dom.GetElementsByClassName("serverdatadiv1")
-                    .First()
-                    .GetElementsByTagName("tbody")
-                    .First()
-                    .Children;
+                var pageLink = element.GetElementsByClassName("column-heading")
+                    .FirstOrDefault()?
+                    .FirstElementChild.GetAttribute("href");
 
-                if (int.TryParse(amount, out var result))
-                    table = table.Take(result);
-                
-                foreach(var element in table)
-                {
-                    
-                    var pageLink = element.GetElementsByClassName("column-heading")
-                        .FirstOrDefault()?
-                        .FirstElementChild.GetAttribute("href");
+                if (pageLink == null)
+                    continue;
 
-                    if (pageLink == null)
-                        continue;
-
-                    serverPages.Add($"https:{pageLink}");
-
-                }
+                links.Add($"https:{pageLink}");
 
             }
 
-            return serverPages;
+            return links;
 
         }
 

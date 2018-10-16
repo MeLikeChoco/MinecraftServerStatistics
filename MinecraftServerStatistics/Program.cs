@@ -28,7 +28,7 @@ namespace MinecraftServerStatistics
 
             Console.WriteLine("Scraping...");
 
-            var tasks = scrapers.Select(scraper => scraper.GetData()).ToArray();
+            var tasks = scrapers.Select(scraper => scraper.Scrape()).ToArray();
 
             Task.WaitAll(tasks);
 

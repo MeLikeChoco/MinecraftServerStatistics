@@ -10,18 +10,20 @@ namespace MinecraftServerStatistics.Models
     {
 
         public string Site { get; }
-        public List<Server> Servers { get; }
+        public string Notes { get; }
+        public SortedDictionary<int, Server> Servers { get; }
 
-        public Data(string site)
+        public Data(string site, string notes)
         {
 
             Site = site;
-            Servers = new List<Server>();
+            Notes = notes;
+            Servers = new SortedDictionary<int, Server>();
 
         }
 
-        public void AddServer(Server server)
-            => Servers.Add(server);
+        public void AddServer(int ranking, Server server)
+            => Servers[ranking] = server;
 
     }
 }
