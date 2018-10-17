@@ -13,8 +13,7 @@ namespace MinecraftServerStatistics.Models.ServerLists
     public class Minecraft_Server_List : Scraper
     {
 
-        public Minecraft_Server_List() : base("https://minecraft-server-list.com/",
-            "First 10 servers are featured servers, so they may not actually be top servers.") { }
+        public Minecraft_Server_List() : base("https://minecraft-server-list.com/") { }
 
         protected override string GetName(IDocument dom)
         {
@@ -105,6 +104,19 @@ namespace MinecraftServerStatistics.Models.ServerLists
                 return null;
 
             return websiteElement.GetElementsByTagName("a").First().GetAttribute("href");
+
+        }
+
+        protected override async Task<int> GetFeaturedServerCount()
+        {
+
+            var dom = await Context.OpenAsync(Site);
+            var table = dom.GetElementsByClassName("serverdatadiv1")
+                .First()
+                .GetElementsByTagName("tbody")
+                .First();
+
+            return table.GetElementsByClassName("featured").Count();
 
         }
 

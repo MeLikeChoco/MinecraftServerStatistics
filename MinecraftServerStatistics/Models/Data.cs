@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,14 +11,19 @@ namespace MinecraftServerStatistics.Models
     {
 
         public string Site { get; }
-        public string Notes { get; }
+
+        private readonly string _notes;
+        [JsonIgnore]
+        public int FeaturedServerCount { get; set; }
+        public string Notes { get => string.Format(_notes, FeaturedServerCount); }
+
         public SortedDictionary<int, Server> Servers { get; }
 
         public Data(string site, string notes)
         {
 
             Site = site;
-            Notes = notes;
+            _notes = notes;
             Servers = new SortedDictionary<int, Server>();
 
         }

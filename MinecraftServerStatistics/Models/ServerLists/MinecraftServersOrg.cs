@@ -11,9 +11,7 @@ namespace MinecraftServerStatistics.Models.ServerLists
     public class MinecraftServersOrg : Scraper
     {
 
-        public MinecraftServersOrg() : base("https://minecraftservers.org/",
-            "First 5 servers are featured/sponsored servers, so they are most likely not top servers. " +
-            "Unlike minecraft-server-list, where it was not clear if the featured servers are actually the top servers, minecraftservers.org is clear on which servers are featured") { }
+        public MinecraftServersOrg() : base("https://minecraftservers.org/") { }
 
         protected override string GetName(IDocument dom)
             => dom.GetElementsByClassName("section-head").First().TextContent.Trim();
@@ -54,8 +52,7 @@ namespace MinecraftServerStatistics.Models.ServerLists
                 .SelectMany(element => element.GetElementsByTagName("tbody"))
                 .SelectMany(element => element.GetElementsByTagName("tr"))
                 .Take(remaining)
-                .Select(element => $"{Site}server/{element.GetAttribute("data-id")}")
-                .Distinct();
+                .Select(element => $"{Site}server/{element.GetAttribute("data-id")}");
 
             links.AddRange(servers);
 
@@ -83,7 +80,19 @@ namespace MinecraftServerStatistics.Models.ServerLists
             //    .FirstOrDefault(element => element.GetElementsByClassName("header").First().TextContent.Contains("Website"))?
             //    .GetElementsByTagName("a").First()
             //    .GetAttribute("href");
-            
+
+        }
+
+        protected override async Task<int> GetFeaturedServerCount()
+        {
+
+            var dom = await Context.OpenAsync(Site);
+
+            return dom.GetElementsByClassName("sponsored-servers container cf")
+                .First()
+                .GetElementsByTagName("tbody")
+                .First().Children.Count();
+
         }
 
         /// <summary>

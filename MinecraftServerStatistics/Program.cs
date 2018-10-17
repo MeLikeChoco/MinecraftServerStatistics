@@ -38,7 +38,7 @@ namespace MinecraftServerStatistics
 
                 Task.WaitAll(tasks);
 
-                var dataList = tasks.Select(task => task.Result);
+                var dataList = tasks.Select(task => task.Result).ToDictionary(data => data.Site, data => data);
 
                 Console.WriteLine("Scraping finished.");
 

@@ -18,7 +18,7 @@ namespace MinecraftServerStatistics.Models
         protected string Site { get; set; }
         protected string Notes { get; set; }
 
-        public Scraper(string site, string notes = "")
+        public Scraper(string site, string notes = "First {0} servers are featured servers.")
         {
 
             Site = site;
@@ -32,21 +32,21 @@ namespace MinecraftServerStatistics.Models
             Console.WriteLine($"Beginning to scrape {Site}");
 
             var serverLinks = new List<string>(50);
-            int remaining, page = 0;
+            int remaining = 50, page = 0;
 
             do
             {
 
+                serverLinks = await GetServerLinks(serverLinks, ++page, remaining);
+                serverLinks = serverLinks.Distinct().ToList();
                 remaining = 50 - serverLinks.Count;
-                page++;
-                serverLinks = await GetServerLinks(serverLinks, page, remaining);
-                
+
             } while (remaining > 0);
 
-            var data = new Data(Site, Notes);
+            var data = new Data(Site, Notes) { FeaturedServerCount = await GetFeaturedServerCount() };
             var counter = 1;
 
-            foreach(var link in serverLinks)
+            foreach (var link in serverLinks)
             {
 
                 var server = new Server();
@@ -62,14 +62,24 @@ namespace MinecraftServerStatistics.Models
 
             }
 
+            SetFeaturedServers(data);
+
             Console.WriteLine($"Finished scraping {Site}");
-                        
+
             return data;
 
         }
 
+        protected virtual void SetFeaturedServers(Data data)
+        {
+
+            for (var i = 1; i <= data.FeaturedServerCount; i++)
+                data.Servers[i].IsFeatured = true;
+
+        }
+
         protected abstract Task<List<string>> GetServerLinks(List<string> links, int page, int remaining);
-        //protected abstract bool GetIsFeatured(IDocument dom);
+        protected abstract Task<int> GetFeaturedServerCount();
         protected abstract string GetName(IDocument dom);
         protected abstract string GetWebsite(IDocument dom);
         protected abstract string GetServerIP(IDocument dom);
