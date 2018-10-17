@@ -29,18 +29,21 @@ namespace MinecraftServerStatistics.Models.ServerLists
 
         protected override IEnumerable<string> GetFeatures(IDocument dom, List<string> features)
         {
-            throw new NotImplementedException();
+
+            var tagSection = GetSection(GetTable(dom), "Tag(s)");
+            var tags = tagSection.Children.ElementAt(1).Children.Select(element => element.TextContent.Trim());
+
+            features.AddRange(tags);
+
+            return features;
+            
         }
 
         protected override string GetName(IDocument dom)
-        {
-            throw new NotImplementedException();
-        }
+            => dom.GetElementsByClassName("active").First().TextContent.Trim();
 
         protected override string GetServerIP(IDocument dom)
-        {
-            throw new NotImplementedException();
-        }
+            => GetSection(GetTable(dom), "Address").Children.ElementAt(1).TextContent.Trim();
 
         protected override async Task<List<string>> GetServerLinks(List<string> links, int page, int remaining)
         {
@@ -61,14 +64,16 @@ namespace MinecraftServerStatistics.Models.ServerLists
         }
 
         protected override string GetVersion(IDocument dom)
-        {
-            throw new NotImplementedException();
-        }
+            => GetSection(GetTable(dom), "Minecraft Version").Children.ElementAt(1).TextContent.Trim();
 
         protected override string GetWebsite(IDocument dom)
-        {
-            throw new NotImplementedException();
-        }
+            => GetSection(GetTable(dom), "Website")?.Children.ElementAt(1).TextContent.Trim();
+
+        private IElement GetTable(IDocument dom)
+            => dom.GetElementsByClassName("col-xs-7").First().GetElementsByTagName("table").First().FirstElementChild;
+
+        private IElement GetSection(IElement table, string match)
+            => table.Children.FirstOrDefault(element => element.GetElementsByTagName("td").First().TextContent.Trim() == match);
 
     }
 }

@@ -18,7 +18,7 @@ namespace MinecraftServerStatistics.Models.ServerLists
         protected override string GetName(IDocument dom)
         {
 
-            var table = GetDataTable(dom);
+            var table = GetTable(dom);
 
             if (!string.IsNullOrEmpty(table.FirstChild.TextContent))
                 return table.FirstChild.TextContent.Trim();
@@ -30,11 +30,12 @@ namespace MinecraftServerStatistics.Models.ServerLists
         protected override IEnumerable<string> GetFeatures(IDocument dom, List<string> features)
         {
             
-            var table = GetDataTable(dom);
+            var table = GetTable(dom);
             var featureSection = table.LastElementChild;
+            var tagNodes = featureSection.FirstChild.ChildNodes;
             
-            foreach(var element in featureSection.FirstElementChild.Children)
-                features.Add(element.TextContent.Trim());
+            foreach(var nodes in tagNodes)
+                features.Add(nodes.TextContent.Trim());
 
             return features;
 
@@ -43,9 +44,7 @@ namespace MinecraftServerStatistics.Models.ServerLists
         protected override string GetServerIP(IDocument dom)
         {
 
-            var table = GetDataTable(dom);
-            var ipSection = table.Children
-                .First(element => element.FirstChild.TextContent.Contains("Server IP:"));
+            var ipSection = GetSection(GetTable(dom), "Server IP:");
 
             return ipSection.Children[1].TextContent.Trim();
 
@@ -84,10 +83,9 @@ namespace MinecraftServerStatistics.Models.ServerLists
         protected override string GetVersion(IDocument dom)
         {
 
-            var table = GetDataTable(dom);
-            var versionElement = table.Children
-                .First(element => element.FirstChild.TextContent.Contains("Server Version:"));
-            return versionElement.Children
+            var versionSection = GetSection(GetTable(dom), "Server Version:");
+
+            return versionSection.Children
                 .ElementAt(1)
                 .TextContent.Trim().Replace("[", "").Replace("]", "");
 
@@ -96,14 +94,12 @@ namespace MinecraftServerStatistics.Models.ServerLists
         protected override string GetWebsite(IDocument dom)
         {
 
-            var table = GetDataTable(dom);
-            var websiteElement = table.Children
-                .FirstOrDefault(element => element.FirstChild.TextContent.Contains("Website:"));
+            var websiteSection = GetSection(GetTable(dom), "Website:");
 
-            if (websiteElement == null)
+            if (websiteSection == null)
                 return null;
 
-            return websiteElement.GetElementsByTagName("a").First().GetAttribute("href");
+            return websiteSection.GetElementsByTagName("a").First().GetAttribute("href");
 
         }
 
@@ -120,7 +116,10 @@ namespace MinecraftServerStatistics.Models.ServerLists
 
         }
 
-        private IElement GetDataTable(IDocument dom)
+        private IElement GetSection(IElement table, string match)
+            => table.Children.FirstOrDefault(element => element.FirstChild.TextContent == match);
+
+        private IElement GetTable(IDocument dom)
             => dom.GetElementsByClassName("serverdata w300").FirstOrDefault().FirstElementChild;
 
     }
