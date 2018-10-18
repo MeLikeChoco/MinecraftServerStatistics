@@ -91,7 +91,7 @@ namespace MinecraftServerStatistics.Models.ServerLists
             return dom.GetElementsByClassName("sponsored-servers container cf")
                 .First()
                 .GetElementsByTagName("tbody")
-                .First().Children.Count();
+                .First().ChildElementCount;
 
         }
 
